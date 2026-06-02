@@ -1,0 +1,16 @@
+torch>=2.2
+numpy>=1.26
+scipy>=1.11
+pretty_midi>=0.2.10
+mido>=1.3
+music21>=9.1
+librosa>=0.10
+soundfile>=0.12
+matplotlib>=3.8
+pandas>=2.2
+tqdm>=4.66
+jupyter>=1.0
+nbconvert>=7.16
+pydub>=0.25
+imageio-ffmpeg>=0.4
+requests>=2.31
