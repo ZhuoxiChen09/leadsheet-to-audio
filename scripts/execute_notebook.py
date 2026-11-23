@@ -15,15 +15,15 @@ import base64
 import io
 import sys
 import traceback
-from contextlib import redirect_stdout, redirect_stderr
+from contextlib import redirect_stderr, redirect_stdout
 from pathlib import Path
 from typing import Any
 
 import matplotlib
+
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import nbformat as nbf
-import numpy as np
 
 REPO = Path(__file__).resolve().parent.parent
 if str(REPO) not in sys.path:
@@ -41,7 +41,10 @@ def _capture_mpl_figures() -> list[dict]:
         out.append(
             nbf.v4.new_output(
                 "display_data",
-                data={"image/png": base64.b64encode(buf.read()).decode("ascii"), "text/plain": "<matplotlib Figure>"},
+                data={
+                    "image/png": base64.b64encode(buf.read()).decode("ascii"),
+                    "text/plain": "<matplotlib Figure>",
+                },
                 metadata={},
             )
         )
@@ -70,7 +73,9 @@ def _capture_audio(ns: dict) -> list[dict]:
             try:
                 png = item._repr_png_()
                 if png:
-                    data["image/png"] = base64.b64encode(png).decode("ascii") if isinstance(png, bytes) else png
+                    data["image/png"] = (
+                        base64.b64encode(png).decode("ascii") if isinstance(png, bytes) else png
+                    )
             except Exception:
                 pass
         if not data:
@@ -118,7 +123,7 @@ def execute_notebook(ipynb_path: Path) -> nbf.NotebookNode:
                 src_clean = "\n".join(
                     line for line in src.splitlines() if not line.strip().startswith("%")
                 )
-                # Try: exec first n-1 lines as statements, eval last expression for repr-style output
+                # Try: exec statements, then eval the last expression for repr-style output.
                 lines = src_clean.split("\n")
                 # Compile entire body as exec
                 compiled = compile(src_clean + "\n", f"<cell {i}>", "exec")
@@ -126,7 +131,31 @@ def execute_notebook(ipynb_path: Path) -> nbf.NotebookNode:
                 # Try to evaluate the last logical "statement" as expression for display
                 try:
                     last_expr_src = lines[-1] if lines else ""
-                    if last_expr_src and not last_expr_src.startswith((" ", "\t")) and not last_expr_src.startswith(("return", "raise", "pass", "import", "from", "def ", "class ", "if ", "for ", "while ", "with ", "try", "else", "elif", "except", "finally", "@")):
+                    if (
+                        last_expr_src
+                        and not last_expr_src.startswith((" ", "\t"))
+                        and not last_expr_src.startswith(
+                            (
+                                "return",
+                                "raise",
+                                "pass",
+                                "import",
+                                "from",
+                                "def ",
+                                "class ",
+                                "if ",
+                                "for ",
+                                "while ",
+                                "with ",
+                                "try",
+                                "else",
+                                "elif",
+                                "except",
+                                "finally",
+                                "@",
+                            )
+                        )
+                    ):
                         expr_val = eval(compile(last_expr_src, f"<cell {i} last>", "eval"), ns)
                         if expr_val is not None:
                             text = repr(expr_val)
@@ -151,7 +180,9 @@ def execute_notebook(ipynb_path: Path) -> nbf.NotebookNode:
         except Exception:
             tb = traceback.format_exc()
             outputs.append(
-                nbf.v4.new_output("error", ename="Exception", evalue="see traceback", traceback=tb.splitlines())
+                nbf.v4.new_output(
+                    "error", ename="Exception", evalue="see traceback", traceback=tb.splitlines()
+                )
             )
         out_txt = stdout_buf.getvalue()
         err_txt = stderr_buf.getvalue()

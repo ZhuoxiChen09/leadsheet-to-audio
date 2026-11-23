@@ -1,0 +1,17 @@
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+extend-exclude = ["*.ipynb"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B"]
+
+[tool.ruff.lint.per-file-ignores]
+# The standalone smoke script adds the repo root to sys.path before importing src.
+"scripts/smoke_test.py" = ["E402"]
+# Preserve the exact contents of embedded notebook cells.
+"scripts/build_notebook.py" = ["E501"]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]

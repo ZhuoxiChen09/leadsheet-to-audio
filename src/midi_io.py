@@ -12,7 +12,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Iterable, List, Optional, Sequence, Tuple
+from typing import List, Optional, Sequence, Tuple
 
 import numpy as np
 
@@ -357,7 +357,6 @@ def _parse_single_abc_tune(lines: Sequence[str]) -> Optional[Leadsheet]:
 
 def _strip_abc_decorations(s: str) -> str:
     out_chars = []
-    skip = 0
     i = 0
     while i < len(s):
         c = s[i]

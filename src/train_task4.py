@@ -11,7 +11,6 @@ import json
 import time
 from pathlib import Path
 
-import numpy as np
 import torch
 from torch.utils.data import DataLoader
 from tqdm import tqdm
@@ -100,10 +99,14 @@ def main():
             sources = load_midi_sources_from_abc(args.abc_root, max_files=args.max_sources)
         else:
             sources = load_midi_sources_from_dir(args.midi_root, max_files=args.max_sources)
-        print(f"[task4] Loaded {len(sources)} MIDI sources from {args.abc_root if args.source=='abc' else args.midi_root}")
+        print(
+            f"[task4] Loaded {len(sources)} MIDI sources from "
+            f"{args.abc_root if args.source == 'abc' else args.midi_root}"
+        )
         if not sources:
             raise RuntimeError(
-                f"No MIDI sources found. Did you run `python scripts/download_data.py --task task2` first?"
+                "No MIDI sources found. Did you run "
+                "`python scripts/download_data.py --task task2` first?"
             )
         n_val = max(1, int(len(sources) * args.val_frac))
         val_sources = sources[:n_val]
@@ -183,7 +186,14 @@ def main():
                 v_run += float(loss_fn(pred, target).item())
                 v_n += 1
         val_loss = v_run / max(1, v_n)
-        history.append({"epoch": epoch, "train_loss": train_loss, "val_loss": val_loss, "wall_sec": time.time() - t0})
+        history.append(
+            {
+                "epoch": epoch,
+                "train_loss": train_loss,
+                "val_loss": val_loss,
+                "wall_sec": time.time() - t0,
+            }
+        )
         print(f"[task4 e{epoch}] train={train_loss:.4f} val={val_loss:.4f} ({time.time()-t0:.1f}s)")
 
         if val_loss < best_val:

@@ -9,7 +9,7 @@ on numpy / librosa primitives.
 """
 from __future__ import annotations
 
-from typing import Optional, Tuple
+from typing import Tuple
 
 import numpy as np
 
@@ -134,7 +134,7 @@ def midi_notes_to_frame_controls(
                 break
         note_slot.append(chosen)
 
-    for note, slot in zip(notes_sorted, note_slot):
+    for note, slot in zip(notes_sorted, note_slot, strict=False):
         if slot < 0:
             continue
         start, end, pitch, vel = note

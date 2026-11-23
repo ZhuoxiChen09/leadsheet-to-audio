@@ -56,7 +56,6 @@ def render_notes(
     if not notes:
         return audio
 
-    t_axis = np.arange(n_samples, dtype=np.float32) / sample_rate
     harm_ix = np.arange(1, n_harmonics + 1, dtype=np.float32)  # 1..K
     # k-dependent exponential decay time constants (seconds): partial k
     # has tau_k = tau_1 / sqrt(k) so higher partials die out faster.

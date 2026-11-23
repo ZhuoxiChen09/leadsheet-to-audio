@@ -21,7 +21,6 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-
 # ---------------------------------------------------------------------------
 # Differentiable DSP modules
 # ---------------------------------------------------------------------------
@@ -88,7 +87,9 @@ def filtered_noise_synth(
     n_samples = T * hop
 
     # Random-phase complex spectrogram with the predicted magnitude
-    phase = 2.0 * math.pi * torch.rand(B, n_bins, T, device=filter_mag.device, dtype=filter_mag.dtype)
+    phase = (
+        2.0 * math.pi * torch.rand(B, n_bins, T, device=filter_mag.device, dtype=filter_mag.dtype)
+    )
     mag = filter_mag.transpose(1, 2)  # (B, n_bins, T)
     spec = torch.complex(mag * torch.cos(phase), mag * torch.sin(phase))
 
@@ -110,7 +111,9 @@ def _upsample_linear(x: torch.Tensor, target_length: int) -> torch.Tensor:
     if x.shape[-1] == target_length:
         return x
     if x.dim() == 2:
-        return F.interpolate(x.unsqueeze(1), size=target_length, mode="linear", align_corners=True).squeeze(1)
+        return F.interpolate(
+            x.unsqueeze(1), size=target_length, mode="linear", align_corners=True
+        ).squeeze(1)
     # (B, K, T) for multichannel
     return F.interpolate(x, size=target_length, mode="linear", align_corners=True)
 
