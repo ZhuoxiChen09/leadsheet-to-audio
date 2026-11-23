@@ -17,7 +17,7 @@ positional alignment loss.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Dict, List, Optional, Sequence, Tuple
+from typing import Dict, List, Optional, Sequence
 
 from .midi_io import (
     CHORD_QUALITIES,
@@ -25,7 +25,6 @@ from .midi_io import (
     Leadsheet,
     MelodyNote,
 )
-
 
 GRID_PER_BEAT = 4  # 16th notes
 MELODY_PITCH_LOW = 48  # C3
@@ -209,7 +208,6 @@ def decode_to_leadsheet(
     tempo: float = 120.0,
     beats_per_bar: float = 4.0,
 ) -> Leadsheet:
-    grid_per_bar = int(round(beats_per_bar * GRID_PER_BEAT))
     melody: List[MelodyNote] = []
     cur_pitch: Optional[int] = None
     cur_start = 0.0

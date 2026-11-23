@@ -15,16 +15,10 @@ Usage:
 from __future__ import annotations
 
 import argparse
-import csv
-import io
-import os
-import shutil
 import sys
 import tarfile
 import urllib.request
-import zipfile
 from pathlib import Path
-from typing import List
 
 # Ensure ``import src`` works when this script is invoked directly.
 REPO_ROOT = Path(__file__).resolve().parent.parent

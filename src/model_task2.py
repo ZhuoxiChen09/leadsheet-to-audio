@@ -13,7 +13,6 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass
-from typing import Optional
 
 import torch
 import torch.nn as nn
@@ -21,7 +20,6 @@ import torch.nn.functional as F
 
 from .tokenizer import (
     CHORD_BOS_ID,
-    CHORD_EOS_ID,
     CHORD_PAD_ID,
     MEL_PAD_ID,
     chord_vocab_size,

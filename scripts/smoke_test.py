@@ -33,7 +33,6 @@ from src.data_task2 import (
     HarmonizationDataset,
     encode_dataset,
     harmonization_collate,
-    train_val_split,
 )
 from src.features import a_weighted_loudness, midi_notes_to_frame_controls
 from src.metrics import (
@@ -56,10 +55,8 @@ from src.model_task4 import DDSPConfig, MultiScaleSTFTLoss, PolyphonicDDSP
 from src.seed import seed_everything
 from src.tokenizer import (
     CHORD_PAD_ID,
-    GRID_PER_BEAT,
     encode_leadsheet,
 )
-from src.sample_task2 import twinkle_twinkle
 
 
 def step(name):
@@ -78,7 +75,13 @@ def make_synthetic_leadsheet() -> Leadsheet:
 
 def test_chord_parsing():
     step("Chord parsing")
-    cases = [("C", 0, "maj"), ("Gm", 7, "min"), ("F#7", 6, "dom7"), ("BbM7", 10, "maj7"), ("Db", 1, "maj")]
+    cases = [
+        ("C", 0, "maj"),
+        ("Gm", 7, "min"),
+        ("F#7", 6, "dom7"),
+        ("BbM7", 10, "maj7"),
+        ("Db", 1, "maj"),
+    ]
     for text, root, quality in cases:
         c = parse_chord_symbol(text)
         assert c is not None, text
@@ -122,22 +125,27 @@ def test_baselines_and_metrics():
     sheet = make_synthetic_leadsheet()
     enc = encode_leadsheet(sheet, max_bars=8)
     assert enc is not None
-    iv = baseline_I_IV_V_I(enc.n_bars)
+    _iv = baseline_I_IV_V_I(enc.n_bars)
     rb = baseline_rule_based(enc.melody_ids)
     bg = BigramChordBaseline()
     bg.fit([enc.chord_ids])
-    bg_pred = bg.predict(enc.n_bars)
+    _bg_pred = bg.predict(enc.n_bars)
     nic = note_in_chord_rate(enc.melody_ids, rb)
     rm = root_motion_stats(rb)
     kl = chord_transition_kl([rb], [enc.chord_ids])
     acc = top_k_accuracy(np.array(rb), np.array(enc.chord_ids))
-    print(f"  rule-based note-in-chord={nic:.3f} root-motion-mean={rm['mean']:.2f} KL={kl:.3f} acc(vs gt)={acc:.3f}")
+    print(
+        f"  rule-based note-in-chord={nic:.3f} root-motion-mean={rm['mean']:.2f}"
+        f" KL={kl:.3f} acc(vs gt)={acc:.3f}"
+    )
 
 
 def test_task2_model():
     step("Task 2 model")
     seed_everything(0)
-    cfg = HarmonizerConfig(d_model=64, n_heads=4, n_enc_layers=2, n_dec_layers=2, d_ff=128, dropout=0.0)
+    cfg = HarmonizerConfig(
+        d_model=64, n_heads=4, n_enc_layers=2, n_dec_layers=2, d_ff=128, dropout=0.0
+    )
     model = Harmonizer(cfg)
     examples = []
     for _ in range(8):
@@ -158,7 +166,9 @@ def test_task2_model():
         ignore_index=CHORD_PAD_ID,
     )
     loss.backward()
-    print(f"  forward+backward OK, loss={loss.item():.4f}, params={model.num_parameters()/1e6:.2f}M")
+    print(
+        f"  forward+backward OK, loss={loss.item():.4f}, params={model.num_parameters() / 1e6:.2f}M"
+    )
     sampled = model.harmonize(melody[:1], n_bars=4, temperature=1.0, top_p=0.9)
     assert sampled.shape == (1, 4)
     print(f"  sampled chord ids: {sampled[0].tolist()}")
@@ -167,13 +177,22 @@ def test_task2_model():
 def test_task4_model_overfit():
     step("Task 4 model (mini-overfit 8 steps)")
     seed_everything(0)
-    cfg = DDSPConfig(n_harmonics=16, noise_filter_taps=33, hidden_size=64, max_voices=2, sample_rate=8000, frame_rate=200)
+    cfg = DDSPConfig(
+        n_harmonics=16,
+        noise_filter_taps=33,
+        hidden_size=64,
+        max_voices=2,
+        sample_rate=8000,
+        frame_rate=200,
+    )
     model = PolyphonicDDSP(cfg)
     sr = cfg.sample_rate
     fr = cfg.frame_rate
     # Synthesize a single-voice sine target so the model has something to fit
     notes = [(0.0, 1.0, 60, 100), (1.2, 2.0, 64, 80)]
-    f0, loud, act = midi_notes_to_frame_controls(notes, duration_sec=2.0, sample_rate=sr, frame_rate=fr, max_voices=2)
+    f0, loud, act = midi_notes_to_frame_controls(
+        notes, duration_sec=2.0, sample_rate=sr, frame_rate=fr, max_voices=2
+    )
     target = synth_sine_voices(f0, loud, sample_rate=sr, frame_rate=fr)
     f0_t = torch.from_numpy(f0).unsqueeze(0)
     loud_t = torch.from_numpy(loud).unsqueeze(0)
@@ -182,7 +201,7 @@ def test_task4_model_overfit():
     loss_fn = MultiScaleSTFTLoss(fft_sizes=(512, 256, 128))
     opt = torch.optim.Adam(model.parameters(), lr=1e-2)
     losses = []
-    for step_i in range(8):
+    for _step_i in range(8):
         pred = model(f0_t, loud_t, act_t)
         loss = loss_fn(pred, target_t)
         opt.zero_grad(set_to_none=True)
@@ -196,7 +215,9 @@ def test_task4_model_overfit():
 def test_synth_baselines():
     step("Synth baselines")
     notes = [(0.0, 0.5, 60, 100), (0.5, 1.0, 64, 80)]
-    f0, loud, act = midi_notes_to_frame_controls(notes, duration_sec=1.0, sample_rate=8000, frame_rate=200, max_voices=2)
+    f0, loud, act = midi_notes_to_frame_controls(
+        notes, duration_sec=1.0, sample_rate=8000, frame_rate=200, max_voices=2
+    )
     sine = synth_sine_voices(f0, loud, 8000, 200)
     tri = synth_triangle_voices(f0, loud, 8000, 200)
     assert sine.shape[0] == 8000

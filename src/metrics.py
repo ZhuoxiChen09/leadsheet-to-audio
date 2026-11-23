@@ -14,7 +14,7 @@ Task 4:
 from __future__ import annotations
 
 from collections import Counter
-from typing import Iterable, Sequence, Tuple
+from typing import Iterable, Sequence
 
 import numpy as np
 
@@ -25,13 +25,11 @@ except ImportError:  # pragma: no cover
 
 from .midi_io import chord_pitch_set
 from .tokenizer import (
-    CHORD_ID_TO_TOK,
     CHORD_VOCAB,
     GRID_PER_BEAT,
     MELODY_ID_TO_TOK,
     chord_from_token_id,
 )
-
 
 # ---------------------------------------------------------------------------
 # Task 2 metrics
@@ -129,7 +127,7 @@ def chord_transition_kl(
     def bigram(seqs):
         m = np.zeros((len(CHORD_VOCAB), len(CHORD_VOCAB)), dtype=np.float64)
         for seq in seqs:
-            for a, b in zip(seq[:-1], seq[1:]):
+            for a, b in zip(seq[:-1], seq[1:], strict=False):
                 m[int(a), int(b)] += 1
         m += eps
         m /= m.sum(axis=1, keepdims=True)
@@ -163,7 +161,9 @@ def multi_scale_stft_distance(
     for n_fft in fft_sizes:
         hop = max(1, n_fft // 4)
         Sp = np.abs(librosa.stft(pred, n_fft=n_fft, hop_length=hop, win_length=n_fft, center=True))
-        St = np.abs(librosa.stft(target, n_fft=n_fft, hop_length=hop, win_length=n_fft, center=True))
+        St = np.abs(
+            librosa.stft(target, n_fft=n_fft, hop_length=hop, win_length=n_fft, center=True)
+        )
         loss += float(np.mean(np.abs(Sp - St)))
         loss += float(np.mean(np.abs(np.log(Sp + log_eps) - np.log(St + log_eps))))
     return loss
@@ -182,10 +182,18 @@ def mel_cepstral_distortion(
         raise RuntimeError("librosa required for MCD")
     n = min(pred.shape[-1], target.shape[-1])
     mfcc_p = librosa.feature.mfcc(
-        y=pred[..., :n].astype(np.float32), sr=sample_rate, n_mfcc=n_mfcc, n_fft=n_fft, hop_length=hop_length
+        y=pred[..., :n].astype(np.float32),
+        sr=sample_rate,
+        n_mfcc=n_mfcc,
+        n_fft=n_fft,
+        hop_length=hop_length,
     )
     mfcc_t = librosa.feature.mfcc(
-        y=target[..., :n].astype(np.float32), sr=sample_rate, n_mfcc=n_mfcc, n_fft=n_fft, hop_length=hop_length
+        y=target[..., :n].astype(np.float32),
+        sr=sample_rate,
+        n_mfcc=n_mfcc,
+        n_fft=n_fft,
+        hop_length=hop_length,
     )
     n_frames = min(mfcc_p.shape[-1], mfcc_t.shape[-1])
     diff = mfcc_p[1:, :n_frames] - mfcc_t[1:, :n_frames]

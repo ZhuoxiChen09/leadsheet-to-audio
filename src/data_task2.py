@@ -10,13 +10,12 @@ and parse each tune into a Leadsheet, then encode with ``tokenizer.encode_leadsh
 """
 from __future__ import annotations
 
-import os
 import random
 import tarfile
 import urllib.request
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Iterable, List, Optional, Sequence, Tuple
+from typing import Iterable, List, Sequence, Tuple
 
 import numpy as np
 
@@ -25,13 +24,10 @@ from .tokenizer import (
     CHORD_BOS_ID,
     CHORD_EOS_ID,
     CHORD_PAD_ID,
-    EncodedExample,
-    MEL_BOS_ID,
-    MEL_EOS_ID,
     MEL_PAD_ID,
+    EncodedExample,
     encode_leadsheet,
 )
-
 
 NOTTINGHAM_DEFAULT_URL = (
     "https://github.com/jukedeck/nottingham-dataset/archive/refs/heads/master.tar.gz"
@@ -116,7 +112,9 @@ def encode_dataset(
 def _transpose_leadsheet(sheet: Leadsheet, semitones: int) -> Leadsheet:
     from .midi_io import ChordSymbol, MelodyNote
     new_melody = [
-        MelodyNote(pitch=(n.pitch + semitones) if not n.is_rest else -1, start=n.start, duration=n.duration)
+        MelodyNote(
+            pitch=(n.pitch + semitones) if not n.is_rest else -1, start=n.start, duration=n.duration
+        )
         for n in sheet.melody
     ]
     new_chords = [
@@ -172,14 +170,14 @@ try:  # torch is an optional import here so module is testable without GPU env
             )
 
     def harmonization_collate(batch):
-        mels, chords, n_bars = zip(*batch)
+        mels, chords, n_bars = zip(*batch, strict=False)
         max_m = max(t.shape[0] for t in mels)
         max_c = max(t.shape[0] for t in chords)
         mel_padded = torch.full((len(batch), max_m), MEL_PAD_ID, dtype=torch.long)
         chord_padded = torch.full((len(batch), max_c), CHORD_PAD_ID, dtype=torch.long)
         mel_mask = torch.zeros((len(batch), max_m), dtype=torch.bool)
         chord_mask = torch.zeros((len(batch), max_c), dtype=torch.bool)
-        for i, (m, c) in enumerate(zip(mels, chords)):
+        for i, (m, c) in enumerate(zip(mels, chords, strict=False)):
             mel_padded[i, : m.shape[0]] = m
             chord_padded[i, : c.shape[0]] = c
             mel_mask[i, : m.shape[0]] = True

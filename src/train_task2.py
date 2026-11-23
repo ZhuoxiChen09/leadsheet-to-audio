@@ -22,7 +22,7 @@ from .data_task2 import (
 )
 from .model_task2 import Harmonizer, HarmonizerConfig
 from .seed import get_device, seed_everything
-from .tokenizer import CHORD_BOS_ID, CHORD_PAD_ID
+from .tokenizer import CHORD_PAD_ID
 
 
 def evaluate(model: Harmonizer, loader: DataLoader, device: str) -> dict:
@@ -165,7 +165,9 @@ def main():
         sched.step()
         train_loss = running / max(1, tokens)
         val_stats = evaluate(model, val_loader, device)
-        history.append({"epoch": epoch, "train_loss": train_loss, **val_stats, "wall_sec": time.time() - t0})
+        history.append(
+            {"epoch": epoch, "train_loss": train_loss, **val_stats, "wall_sec": time.time() - t0}
+        )
         print(
             f"[task2 e{epoch}] train={train_loss:.4f} "
             f"val_loss={val_stats['loss']:.4f} ppl={val_stats['perplexity']:.2f} "

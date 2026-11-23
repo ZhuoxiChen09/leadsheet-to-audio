@@ -17,11 +17,7 @@ from .tokenizer import (
     CHORD_VOCAB,
     GRID_PER_BEAT,
     MELODY_ID_TO_TOK,
-    MELODY_VOCAB,
-    chord_from_token_id,
-    chord_token_id,
 )
-
 
 # ---------------------------------------------------------------------------
 # Task 2: chord harmonization baselines
@@ -171,7 +167,6 @@ def _voice_synth(
     n_voices, n_frames = f0_voices.shape
     n_samples = int(n_frames * sample_rate / frame_rate)
     out = np.zeros(n_samples, dtype=np.float32)
-    samples_per_frame = sample_rate / frame_rate
     for v in range(n_voices):
         f0_s = _upsample_linear(f0_voices[v], n_samples)
         amp_s = _upsample_linear(loud_voices[v], n_samples)

@@ -16,11 +16,10 @@ Two data sources are supported:
 from __future__ import annotations
 
 import csv
-import json
 import random
 from dataclasses import dataclass
 from pathlib import Path
-from typing import List, Optional, Sequence, Tuple
+from typing import List, Sequence, Tuple
 
 import numpy as np
 
@@ -31,9 +30,13 @@ except ImportError as e:  # pragma: no cover
     raise RuntimeError("librosa + soundfile are required") from e
 
 from .features import FRAME_RATE, SAMPLE_RATE, midi_notes_to_frame_controls
-from .midi_io import midi_to_note_events, parse_nottingham_abc, leadsheet_to_pretty_midi, pretty_midi_to_note_events
+from .midi_io import (
+    leadsheet_to_pretty_midi,
+    midi_to_note_events,
+    parse_nottingham_abc,
+    pretty_midi_to_note_events,
+)
 from .teacher_synth import render_notes
-
 
 # ---------------------------------------------------------------------------
 
@@ -133,7 +136,9 @@ def slice_example(
         frame_rate=frame_rate,
         max_voices=max_voices,
     )
-    return DDSPTrainExample(audio=y.astype(np.float32), f0_voices=f0v, loud_voices=loudv, active=act)
+    return DDSPTrainExample(
+        audio=y.astype(np.float32), f0_voices=f0v, loud_voices=loudv, active=act
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -151,7 +156,9 @@ class MidiSource:
     duration: float
 
 
-def load_midi_sources_from_abc(abc_root: str | Path, max_files: int | None = None) -> list[MidiSource]:
+def load_midi_sources_from_abc(
+    abc_root: str | Path, max_files: int | None = None
+) -> list[MidiSource]:
     """Convert every ABC tune under ``abc_root`` into MidiSources.
 
     Each tune is rendered as a melody-only pretty_midi.PrettyMIDI (no chords)
@@ -183,7 +190,9 @@ def load_midi_sources_from_abc(abc_root: str | Path, max_files: int | None = Non
     return sources
 
 
-def load_midi_sources_from_dir(midi_root: str | Path, max_files: int | None = None) -> list[MidiSource]:
+def load_midi_sources_from_dir(
+    midi_root: str | Path, max_files: int | None = None
+) -> list[MidiSource]:
     """Load .mid / .midi files from a directory."""
     midi_root = Path(midi_root)
     sources: list[MidiSource] = []
@@ -241,8 +250,12 @@ try:
             for (s, e, p, v) in src.notes:
                 if e <= start or s >= end:
                     continue
-                local_notes.append((max(0.0, s - start), min(self.clip_seconds, e - start), int(p), int(v)))
-            audio = render_notes(local_notes, duration_sec=self.clip_seconds, sample_rate=self.sample_rate, seed=idx)
+                local_notes.append(
+                    (max(0.0, s - start), min(self.clip_seconds, e - start), int(p), int(v))
+                )
+            audio = render_notes(
+                local_notes, duration_sec=self.clip_seconds, sample_rate=self.sample_rate, seed=idx
+            )
             f0, loud, act = midi_notes_to_frame_controls(
                 local_notes,
                 duration_sec=self.clip_seconds,
@@ -291,7 +304,9 @@ try:
 
         def _ensure_loaded(self, clip: MaestroClip) -> Tuple[np.ndarray, list]:
             if clip.audio_path not in self._audio_cache:
-                self._audio_cache[clip.audio_path] = load_clip_audio(clip.audio_path, sr=self.sample_rate)
+                self._audio_cache[clip.audio_path] = load_clip_audio(
+                    clip.audio_path, sr=self.sample_rate
+                )
             if clip.midi_path not in self._notes_cache:
                 self._notes_cache[clip.midi_path] = midi_to_note_events(clip.midi_path)
             return self._audio_cache[clip.audio_path], self._notes_cache[clip.midi_path]

@@ -13,7 +13,6 @@ import argparse
 from pathlib import Path
 from typing import List, Sequence
 
-import numpy as np
 import torch
 
 from .midi_io import (
@@ -25,9 +24,7 @@ from .midi_io import (
 from .model_task2 import Harmonizer, HarmonizerConfig
 from .seed import get_device, seed_everything
 from .tokenizer import (
-    CHORD_BOS_ID,
     CHORD_EOS_ID,
-    GRID_PER_BEAT,
     chord_from_token_id,
     encode_leadsheet,
 )
@@ -117,7 +114,7 @@ def twinkle_twinkle() -> Leadsheet:
     durations = [1.0] * len(pitches)
     melody: List[MelodyNote] = []
     t = 0.0
-    for p, d in zip(pitches, durations):
+    for p, d in zip(pitches, durations, strict=False):
         melody.append(MelodyNote(pitch=p, start=t, duration=d))
         t += d
     return Leadsheet(

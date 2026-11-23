@@ -88,10 +88,12 @@ See [`RUNBOOK.md`](RUNBOOK.md) for the full reproducible command set (exact hype
 ├── scripts/                     # one-off entry points (data, notebook build, smoke test)
 ├── samples/                     # intermediate demo artifacts (wavs gitignored)
 ├── docs/
-│   ├── RUNBOOK.md (at repo root for tooling reasons) — see top-level
+│   ├── course/submission.md     # Course handoff checklist
 │   ├── PRESENTATION.md          # 20-min talk script
 │   └── video_url.txt            # link to the walkthrough recording
 ├── requirements.txt
+├── requirements-dev.txt
+├── requirements-lock.txt
 ├── RUNBOOK.md                   # exact reproducibility commands
 ├── LICENSE                      # MIT
 └── README.md
